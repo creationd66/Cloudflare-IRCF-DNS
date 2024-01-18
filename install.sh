@@ -7,13 +7,6 @@ mkdir -p $script_dir
 # Define service name
 service_name="cloudflare_dns"
 
-# Check if the service is running
-if systemctl is-active --quiet $service_name.service; then
-    echo "Service: Running"
-else
-    echo "Service: Not Running"
-fi
-
 # Update and upgrade the system
 sudo apt update && sudo apt upgrade -y
 
@@ -25,6 +18,13 @@ run_script() {
     wget https://github.com/creationd66/Cloudflare-IRCF-DNS/raw/main/main.py -O $script_dir/main.py
     python3 $script_dir/main.py
 }
+clear
+# Check if the service is running
+if systemctl is-active --quiet $service_name.service; then
+    echo "Service: Running"
+else
+    echo "Service: Not Running"
+fi
 
 # Function to install as a service
 install_service() {
