@@ -67,7 +67,7 @@ def main():
         'custom_subdomains': custom_subdomains
     }
 
-    with open('service.json', 'w') as file:
+    with open('/root/cloudflare_dns/service.json', 'w') as file:
         json.dump(service_config, file)
 
     print("Service configuration saved.")
