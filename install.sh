@@ -28,11 +28,11 @@ run_script() {
 
 # Function to install as a service
 install_service() {
+    # Run service_config.py to configure the service
     wget https://github.com/creationd66/Cloudflare-IRCF-DNS/raw/main/service_config.py -O $script_dir/service_config.py
     python3 $script_dir/service_config.py
 
-    wget https://github.com/creationd66/Cloudflare-IRCF-DNS/raw/main/service.py -O $script_dir/service.py
-
+    # Prompt for restart interval
     echo "Enter the interval for the service (e.g., 1h for 1 hour, 30m for 30 minutes, 1d for 1 day):"
     read interval
 
@@ -43,6 +43,9 @@ install_service() {
         *d) interval_seconds=$(( ${interval%d} * 86400 )) ;; # days to seconds
         *) echo "Invalid interval format"; exit 1 ;;
     esac
+
+    # Download and set up the service script
+    wget https://github.com/creationd66/Cloudflare-IRCF-DNS/raw/main/service.py -O $script_dir/service.py
 
     # Create systemd service file
     sudo bash -c "cat > /etc/systemd/system/$service_name.service << EOF
@@ -58,10 +61,12 @@ RestartSec=$interval_seconds
 WantedBy=multi-user.target
 EOF"
 
+    # Enable and start the systemd service
     sudo systemctl enable $service_name.service
     sudo systemctl start $service_name.service
     echo "Service installed and started."
 }
+
 
 # Function to uninstall the service
 uninstall_service() {
