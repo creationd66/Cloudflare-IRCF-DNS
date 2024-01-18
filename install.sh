@@ -4,55 +4,72 @@
 script_dir="$HOME/cloudflare_dns"
 mkdir -p $script_dir
 
-# Update and upgrade the system
-apt update && apt upgrade -y
+# Define service name
+service_name="cloudflare_dns"
 
-# Install Python and pip
-apt install python3 python3-pip -y
-
-# Download the Python script from your GitHub repository
-wget https://github.com/creationd66/Cloudflare-IRCF-DNS/raw/main/main.py -O $script_dir/dns.py
-
-# Check for the correct Python command
-python_command=""
-if command -v python3 &>/dev/null; then
-    python_command="python3"
-elif command -v python &>/dev/null; then
-    python_command="python"
+# Check if the service is running
+if systemctl is-active --quiet $service_name.service; then
+    echo "Service: Running"
 else
-    echo "Python is not installed!"
-    exit 1
+    echo "Service: Not Running"
 fi
 
-# Function to run the script
+# Update and upgrade the system
+sudo apt update && sudo apt upgrade -y
+
+# Install Python and pip
+sudo apt install python3 python3-pip -y
+
+# Function to download and run the script
 run_script() {
-    $python_command $script_dir/dns.py
+    wget https://github.com/creationd66/Cloudflare-IRCF-DNS/raw/main/main.py -O $script_dir/main.py
+    python3 $script_dir/main.py
 }
 
 # Function to install as a service
 install_service() {
-    service_file="/etc/systemd/system/cloudflare_dns.service"
-    echo "[Unit]
+    wget https://github.com/creationd66/Cloudflare-IRCF-DNS/raw/main/service_config.py -O $script_dir/service_config.py
+    python3 $script_dir/service_config.py
+
+    wget https://github.com/creationd66/Cloudflare-IRCF-DNS/raw/main/service.py -O $script_dir/service.py
+
+    echo "Enter the interval for the service (e.g., 1h for 1 hour, 30m for 30 minutes, 1d for 1 day):"
+    read interval
+
+    # Convert interval to seconds
+    case $interval in
+        *h) interval_seconds=$(( ${interval%h} * 3600 )) ;; # hours to seconds
+        *m) interval_seconds=$(( ${interval%m} * 60 )) ;;   # minutes to seconds
+        *d) interval_seconds=$(( ${interval%d} * 86400 )) ;; # days to seconds
+        *) echo "Invalid interval format"; exit 1 ;;
+    esac
+
+    # Create systemd service file
+    sudo bash -c "cat > /etc/systemd/system/$service_name.service << EOF
+[Unit]
 Description=Cloudflare DNS Update Service
 
 [Service]
-ExecStart=$python_command $script_dir/dns.py
+ExecStart=python3 $script_dir/service.py
+Restart=always
+RestartSec=$interval_seconds
 
 [Install]
-WantedBy=multi-user.target" > $service_file
+WantedBy=multi-user.target
+EOF"
 
-    systemctl enable cloudflare_dns.service
-    systemctl start cloudflare_dns.service
+    sudo systemctl enable $service_name.service
+    sudo systemctl start $service_name.service
     echo "Service installed and started."
 }
 
 # Function to uninstall the service
 uninstall_service() {
-    systemctl stop cloudflare_dns.service
-    systemctl disable cloudflare_dns.service
-    rm -f /etc/systemd/system/cloudflare_dns.service
-    systemctl daemon-reload
-    systemctl reset-failed
+    sudo systemctl stop $service_name.service
+    sudo systemctl disable $service_name.service
+    sudo rm -f /etc/systemd/system/$service_name.service
+    sudo systemctl daemon-reload
+    sudo systemctl reset-failed
     echo "Service uninstalled."
 }
 
@@ -64,16 +81,8 @@ echo "3- Uninstall the Service"
 read -p "Enter your choice (1/2/3): " user_choice
 
 case $user_choice in
-    1)
-        run_script
-        ;;
-    2)
-        install_service
-        ;;
-    3)
-        uninstall_service
-        ;;
-    *)
-        echo "Invalid choice!"
-        ;;
+    1) run_script ;;
+    2) install_service ;;
+    3) uninstall_service ;;
+    *) echo "Invalid choice!" ;;
 esac
