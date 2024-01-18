@@ -71,7 +71,7 @@ EOF"
 
 # Function to uninstall the service
 uninstall_service() {
-    sudo rm -r /root/cloudflare_dns
+    sudo rm -r $script_dir
     sudo systemctl stop $service_name.service
     sudo systemctl disable $service_name.service
     sudo rm -f /etc/systemd/system/$service_name.service
