@@ -76,7 +76,7 @@ uninstall_service() {
     sudo rm -f /etc/systemd/system/$service_name.service
     sudo systemctl daemon-reload
     sudo systemctl reset-failed
-    sudo rm -r /root/cloudflare_dns/
+    sudo rm -r /root/cloudflare_dns
     echo "Service uninstalled."
 }
 
