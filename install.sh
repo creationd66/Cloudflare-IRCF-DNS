@@ -11,7 +11,8 @@ service_name="cloudflare_dns"
 sudo apt update && sudo apt upgrade -y
 
 # Install Python and pip
-sudo apt install python3 python3-pip requests -y
+sudo apt install python3 python3-pip -y
+python3-pip install requests
 
 # Function to download and run the script
 run_script() {
