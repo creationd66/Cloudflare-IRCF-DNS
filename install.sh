@@ -30,6 +30,8 @@ fi
 install_service() {
     # Run service_config.py to configure the service
     wget https://github.com/creationd66/Cloudflare-IRCF-DNS/raw/main/service_config.py -O $script_dir/service_config.py
+    # Download and set up the service script
+    wget https://github.com/creationd66/Cloudflare-IRCF-DNS/raw/main/service.py -O $script_dir/service.py
     python3 $script_dir/service_config.py
 
     # Prompt for restart interval
@@ -44,8 +46,6 @@ install_service() {
         *) echo "Invalid interval format"; exit 1 ;;
     esac
 
-    # Download and set up the service script
-    wget https://github.com/creationd66/Cloudflare-IRCF-DNS/raw/main/service.py -O $script_dir/service.py
 
     # Create systemd service file
     sudo bash -c "cat > /etc/systemd/system/$service_name.service << EOF
