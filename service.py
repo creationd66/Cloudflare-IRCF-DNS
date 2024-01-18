@@ -72,8 +72,8 @@ def create_dns_record(ip, comment, subdomain, proxied, credentials):
 
 def main():
     # Load service configuration
-    with open('service.json', 'r') as file:
-        service_config = json.load(file)
+    with open('/root/cloudflare_dns/service.json', 'r') as file:
+    service_config = json.load(file)
 
     credentials = service_config['credentials']
     proxied = service_config['proxied']
